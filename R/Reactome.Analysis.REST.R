@@ -44,7 +44,10 @@ REACTOMEEnrichmentAnalysis<-function(identifiers,resource="UNIPROT",projection=F
   if(token) {
     return(downloadREACTOMEPathwayEnrichmentRes(token=token,resource=resource))
   }
-  fileUpload(contents = as.character(paste(identifiers,collapse = "\n")), contentType = 'text/plain', filename = "proteins.txt")->fu
+  # we add a first line with a comments as with some initial proteins, the webservice responds with a Error: Unsupported Media Type
+  # This doesn't happen when using the webservice through their documentation page, so it might be an issue with RCurl.
+  # Offending protein was "P20701". Moving the protein to another position of the array fixed the problem.
+  fileUpload(contents = as.character(paste(c("# First line comment",identifiers),collapse = "\n")), contentType = 'text/plain', filename = "proteins.txt")->fu
   postForm(uri = buildPostURL(resource = resource, projection = projection), file = fu)->jsonResp
   fromJSON(jsonResp,asText=TRUE)->parsedResp
   if(getToken) {
